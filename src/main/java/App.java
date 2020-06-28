@@ -10,7 +10,7 @@ public class App {
     private SalesPromotionRepository salesPromotionRepository;
     private static final String BASIC_MONEY_UNIT = "yuan";
     private static final String BASE_UNIT_SPLIT = " x ";
-    private double resultMoney = Double.POSITIVE_INFINITY;
+    private double resultMoney;
     private Map<String, Item> itemMap;
     private Map<String, Item> orderItemMap;
 
@@ -41,18 +41,20 @@ public class App {
                     .append((int)(itemMap.get(split[0]).getPrice() * Integer.valueOf(split[1])))
                     .append(" ").append(BASIC_MONEY_UNIT + "\n");
             orderItemMap.put(split[0], itemMap.get(split[0]));
+            resultMoney += (itemMap.get(split[0]).getPrice() * Integer.valueOf(split[1]));
         }
         List<SalesPromotion> salesPromotionList = salesPromotionRepository.findAll();
-        res.append("-----------------------------------\n").append("Promotion used:\n");
         res.append(chooseCharge(salesPromotionList, moneyWithoutDiscount));
 
-        res.append("TotalÔºö").append((int)resultMoney).append(" ").append(BASIC_MONEY_UNIT).append("\n");
-        res.append("===================================");
+        res.append("-----------------------------------\n")
+                .append("Total£∫").append((int)resultMoney).append(" ").append(BASIC_MONEY_UNIT).append("\n")
+                .append("===================================");
         return res.toString();
     }
 
     public String chooseCharge(List<SalesPromotion> salesPromotionList, double moneyWithoutDiscount) {
 
+        StringBuilder res = new StringBuilder("-----------------------------------\n").append("Promotion used:\n");
         StringBuilder str = new StringBuilder();
 
         SalesPromotion choosePro = null;
@@ -61,7 +63,7 @@ public class App {
                 if (Double.compare(resultMoney, moneyWithoutDiscount - 6) > 0) {
                     resultMoney = moneyWithoutDiscount - 6;
                     str = new StringBuilder();
-                    str.append("Êª°30Âáè6 yuanÔºåsaving 6 yuan\n");
+                    str.append("¬˙30ºı6 yuan£¨saving 6 yuan\n");
                 }
             } else if ("50%_DISCOUNT_ON_SPECIFIED_ITEMS".equals(pro.getType())) {
                 double saveMoney = 0;
@@ -84,14 +86,18 @@ public class App {
                             str.append(itemMap.get(item).getName());
                             flag = 1;
                         } else {
-                            str.append("Ôºå").append(itemMap.get(item).getName());
+                            str.append("£¨").append(itemMap.get(item).getName());
                         }
                     }
-                    str.append(")Ôºåsaving ").append((int)saveMoney).append(" yuan\n");
+                    str.append(")£¨saving ").append((int)saveMoney).append(" yuan\n");
                 }
             }
         }
-        str.append("-----------------------------------\n");
-        return str.toString();
+
+        if (str.toString().isEmpty()){
+            return str.toString();
+        }else {
+            return res.append(str).toString();
+        }
     }
 }
